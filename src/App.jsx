@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock, Layers, LayoutGrid, AlignJustify } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock, Layers, LayoutGrid, AlignJustify, Columns2, Rows3 } from 'lucide-react';
 
 // --- MOCK DATA CONFIGURATION ---
 
@@ -406,7 +406,7 @@ const TeamMemberRow = ({ member, isPrimary, onSetPrimary, onRemove }) => (
 
 // --- DENSE COMPONENTS FOR FLAT VIEW ---
 
-const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, onBlur, error, required = false, suggestions = [], autoFocus = false }) => {
+const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, onBlur, error, required = false, suggestions = [], autoFocus = false, maxLength }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const filteredSuggestions = suggestions.length > 0 && value && type === 'text'
@@ -415,7 +415,7 @@ const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, 
 
   return (
     <div className="relative">
-      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+      <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
         {label}{required && '*'}
       </label>
       <input
@@ -423,6 +423,7 @@ const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, 
         name={name}
         value={value}
         autoFocus={autoFocus}
+        maxLength={maxLength}
         onChange={(e) => {
           onChange(e);
           if (suggestions.length > 0 && type === 'text') setShowSuggestions(true);
@@ -433,18 +434,18 @@ const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, 
           if (onBlur) onBlur(e);
         }}
         placeholder={placeholder}
-        className={`w-full px-2 py-1.5 bg-white border rounded text-gray-700 text-sm focus:outline-none focus:ring-1
+        className={`w-full p-3 bg-white border rounded-md text-gray-700 text-sm focus:outline-none focus:ring-1
           ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'}
           placeholder:text-gray-400 transition-colors`}
       />
-      {error && <span className="text-[10px] text-red-600 absolute -bottom-4 left-0">{error}</span>}
+      {error && <span className="text-[11px] text-red-600 absolute -bottom-4 left-0">{error}</span>}
 
       {showSuggestions && value && filteredSuggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded shadow-lg mt-1 z-50 max-h-32 overflow-y-auto">
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-md shadow-lg mt-1 z-50 max-h-32 overflow-y-auto">
           {filteredSuggestions.map((suggestion, index) => (
             <div
               key={index}
-              className="px-2 py-1 hover:bg-gray-50 cursor-pointer text-xs text-gray-700"
+              className="p-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700"
               onClick={() => {
                 onChange({ target: { name, value: suggestion } });
                 setShowSuggestions(false);
@@ -461,7 +462,7 @@ const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, 
 
 const DenseSelect = ({ label, name, value, options, onChange, required = false }) => (
   <div>
-    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
       {label}{required && '*'}
     </label>
     <div className="relative">
@@ -469,13 +470,13 @@ const DenseSelect = ({ label, name, value, options, onChange, required = false }
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-gray-700 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+        className="w-full p-3 bg-white border border-gray-200 rounded-md text-gray-700 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
       >
         {options.map((opt) => (
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
     </div>
   </div>
 );
@@ -701,14 +702,33 @@ const CardView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
 
 // --- FORM VIEW COMPONENT ---
 
-const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick }) => (
+const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick, formColumns, setFormColumns }) => (
   <div className="flex-1 overflow-y-auto p-6">
-    <div className="max-w-4xl mx-auto">
+    <div className={`mx-auto ${formColumns === 2 ? 'max-w-6xl' : 'max-w-3xl'}`}>
       {/* Single Container */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-900">Create New Project</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-gray-900">Create New Project</h1>
+            {/* Column Toggle */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5">
+              <button
+                onClick={() => setFormColumns(1)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition ${formColumns === 1 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                title="Single column layout"
+              >
+                <Rows3 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setFormColumns(2)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-md transition ${formColumns === 2 ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                title="Two column layout"
+              >
+                <Columns2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={handleResetClick}
@@ -725,136 +745,285 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
           </div>
         </div>
 
-        {/* PROJECT DETAILS Section */}
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <FileText className="w-4 h-4 text-[#0071D0]" />
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Project Details</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <DenseInput
-                label="Project Name"
-                name="projectName"
-                placeholder="Enter project name"
-                value={formData.projectName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={errors.projectName}
-                required
-                suggestions={EXISTING_PROJECTS}
-                autoFocus
-              />
-            </div>
-            <DenseInput
-              label="Project Alias"
-              name="projectAlias"
-              placeholder="Enter alias"
-              value={formData.projectAlias}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Project Status"
-              name="projectStatus"
-              value={formData.projectStatus}
-              options={DROPDOWN_OPTIONS.projectStatus}
-              onChange={handleChange}
-            />
-            <div className="col-span-2">
-              <DenseInput
-                label="Description"
-                name="projectDescription"
-                placeholder="Enter description"
-                value={formData.projectDescription}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
-        </div>
+        {formColumns === 2 ? (
+          <>
+            {/* 2-COLUMN LAYOUT */}
+            {/* ROW 1: Project Details + Bid Info side by side */}
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              {/* PROJECT DETAILS Section */}
+              <div className="p-5 border-r border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileText className="w-4 h-4 text-[#0071D0]" />
+                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Project Details</h2>
+                </div>
+                <div className="space-y-4">
+                  <DenseInput
+                    label="Project Name"
+                    name="projectName"
+                    placeholder="Enter project name"
+                    value={formData.projectName}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    error={errors.projectName}
+                    required
+                    maxLength={75}
+                    suggestions={EXISTING_PROJECTS}
+                    autoFocus
+                  />
+                  <DenseInput
+                    label="Project Alias"
+                    name="projectAlias"
+                    placeholder="Enter alias"
+                    value={formData.projectAlias}
+                    onChange={handleChange}
+                    maxLength={75}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <DenseSelect
+                      label="Project Status"
+                      name="projectStatus"
+                      value={formData.projectStatus}
+                      options={DROPDOWN_OPTIONS.projectStatus}
+                      onChange={handleChange}
+                    />
+                    <DenseInput
+                      label="Description"
+                      name="projectDescription"
+                      placeholder="Enter description"
+                      value={formData.projectDescription}
+                      onChange={handleChange}
+                      maxLength={25}
+                    />
+                  </div>
+                </div>
+              </div>
 
-        {/* BID INFO Section */}
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="w-4 h-4 text-[#0071D0]" />
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bid Info</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <DenseInput
-              label="Bid Date"
-              name="bidDate"
-              type="date"
-              value={formData.bidDate}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Bid Time"
-              name="bidTime"
-              value={formData.bidTime}
-              options={DROPDOWN_OPTIONS.bidTimes}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Visibility"
-              name="visibility"
-              value={formData.visibility}
-              options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        {/* CUSTOMER & OWNER Section */}
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <Building className="w-4 h-4 text-[#0071D0]" />
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <DenseSelect
-              label="Engineer/Customer"
-              name="customer"
-              value={formData.customer}
-              options={DROPDOWN_OPTIONS.customers}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Owner"
-              name="owner"
-              value={formData.owner}
-              options={DROPDOWN_OPTIONS.owners}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Owner Influence"
-              name="ownerInfluence"
-              value={formData.ownerInfluence}
-              options={DROPDOWN_OPTIONS.influence}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-
-        {/* JOBSITE LOCATION Section */}
-        <div className="p-5 border-b border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-4 h-4 text-[#0071D0]" />
-            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobsite Location</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <DenseInput label="Address 1" name="address1" placeholder="Enter address" value={formData.address1} onChange={handleChange} />
+              {/* BID INFO Section */}
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Calendar className="w-4 h-4 text-[#0071D0]" />
+                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bid Info</h2>
+                </div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <DenseInput
+                      label="Bid Date"
+                      name="bidDate"
+                      type="date"
+                      value={formData.bidDate}
+                      onChange={handleChange}
+                    />
+                    <DenseSelect
+                      label="Bid Time"
+                      name="bidTime"
+                      value={formData.bidTime}
+                      options={DROPDOWN_OPTIONS.bidTimes}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <DenseSelect
+                    label="Visibility"
+                    name="visibility"
+                    value={formData.visibility}
+                    options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="col-span-2">
-              <DenseInput label="Address 2" name="address2" placeholder="Enter address" value={formData.address2} onChange={handleChange} />
-            </div>
-            <DenseInput label="City" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
-            <DenseSelect label="State" name="state" value={formData.state} options={DROPDOWN_OPTIONS.states} onChange={handleChange} />
-            <DenseInput label="Zip" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} />
-            <DenseSelect label="Country" name="country" value={formData.country} options={DROPDOWN_OPTIONS.countries} onChange={handleChange} />
-          </div>
-        </div>
 
-        {/* QUOTE TEAM Section */}
+            {/* ROW 2: Jobsite Location + Customer & Owner side by side */}
+            <div className="grid grid-cols-2 border-b border-gray-200">
+              {/* JOBSITE LOCATION Section */}
+              <div className="p-5 border-r border-gray-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <MapPin className="w-4 h-4 text-[#0071D0]" />
+                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobsite Location</h2>
+                </div>
+                <div className="space-y-4">
+                  <DenseInput label="Address 1" name="address1" placeholder="Enter address" value={formData.address1} onChange={handleChange} />
+                  <DenseInput label="Address 2" name="address2" placeholder="Enter address" value={formData.address2} onChange={handleChange} />
+                  <div className="grid grid-cols-4 gap-4">
+                    <DenseInput label="City" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                    <DenseSelect label="State" name="state" value={formData.state} options={DROPDOWN_OPTIONS.states} onChange={handleChange} />
+                    <DenseInput label="Zip" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} />
+                    <DenseSelect label="Country" name="country" value={formData.country} options={DROPDOWN_OPTIONS.countries} onChange={handleChange} />
+                  </div>
+                </div>
+              </div>
+
+              {/* CUSTOMER & OWNER Section */}
+              <div className="p-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <Building className="w-4 h-4 text-[#0071D0]" />
+                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
+                </div>
+                <div className="space-y-4">
+                  <DenseSelect
+                    label="Engineer/Customer"
+                    name="customer"
+                    value={formData.customer}
+                    options={DROPDOWN_OPTIONS.customers}
+                    onChange={handleChange}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <DenseSelect
+                      label="Owner"
+                      name="owner"
+                      value={formData.owner}
+                      options={DROPDOWN_OPTIONS.owners}
+                      onChange={handleChange}
+                    />
+                    <DenseSelect
+                      label="Owner Influence"
+                      name="ownerInfluence"
+                      value={formData.ownerInfluence}
+                      options={DROPDOWN_OPTIONS.influence}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* 1-COLUMN LAYOUT */}
+            {/* PROJECT DETAILS Section */}
+            <div className="p-5 border-b border-gray-200">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-4 h-4 text-[#0071D0]" />
+                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Project Details</h2>
+              </div>
+              <div className="space-y-4">
+                <DenseInput
+                  label="Project Name"
+                  name="projectName"
+                  placeholder="Enter project name"
+                  value={formData.projectName}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  error={errors.projectName}
+                  required
+                  maxLength={75}
+                  suggestions={EXISTING_PROJECTS}
+                  autoFocus
+                />
+                <DenseInput
+                  label="Project Alias"
+                  name="projectAlias"
+                  placeholder="Enter alias"
+                  value={formData.projectAlias}
+                  onChange={handleChange}
+                  maxLength={75}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <DenseSelect
+                    label="Project Status"
+                    name="projectStatus"
+                    value={formData.projectStatus}
+                    options={DROPDOWN_OPTIONS.projectStatus}
+                    onChange={handleChange}
+                  />
+                  <DenseInput
+                    label="Description"
+                    name="projectDescription"
+                    placeholder="Enter description"
+                    value={formData.projectDescription}
+                    onChange={handleChange}
+                    maxLength={25}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* BID INFO Section */}
+            <div className="p-5 border-b border-gray-200">
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="w-4 h-4 text-[#0071D0]" />
+                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bid Info</h2>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <DenseInput
+                  label="Bid Date"
+                  name="bidDate"
+                  type="date"
+                  value={formData.bidDate}
+                  onChange={handleChange}
+                />
+                <DenseSelect
+                  label="Bid Time"
+                  name="bidTime"
+                  value={formData.bidTime}
+                  options={DROPDOWN_OPTIONS.bidTimes}
+                  onChange={handleChange}
+                />
+                <DenseSelect
+                  label="Visibility"
+                  name="visibility"
+                  value={formData.visibility}
+                  options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* JOBSITE LOCATION Section */}
+            <div className="p-5 border-b border-gray-200">
+              <div className="flex items-center gap-2 mb-4">
+                <MapPin className="w-4 h-4 text-[#0071D0]" />
+                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobsite Location</h2>
+              </div>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <DenseInput label="Address 1" name="address1" placeholder="Enter address" value={formData.address1} onChange={handleChange} />
+                  <DenseInput label="Address 2" name="address2" placeholder="Enter address" value={formData.address2} onChange={handleChange} />
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                  <DenseInput label="City" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                  <DenseSelect label="State" name="state" value={formData.state} options={DROPDOWN_OPTIONS.states} onChange={handleChange} />
+                  <DenseInput label="Zip" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} />
+                  <DenseSelect label="Country" name="country" value={formData.country} options={DROPDOWN_OPTIONS.countries} onChange={handleChange} />
+                </div>
+              </div>
+            </div>
+
+            {/* CUSTOMER & OWNER Section */}
+            <div className="p-5 border-b border-gray-200">
+              <div className="flex items-center gap-2 mb-4">
+                <Building className="w-4 h-4 text-[#0071D0]" />
+                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
+              </div>
+              <div className="space-y-4">
+                <DenseSelect
+                  label="Engineer/Customer"
+                  name="customer"
+                  value={formData.customer}
+                  options={DROPDOWN_OPTIONS.customers}
+                  onChange={handleChange}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <DenseSelect
+                    label="Owner"
+                    name="owner"
+                    value={formData.owner}
+                    options={DROPDOWN_OPTIONS.owners}
+                    onChange={handleChange}
+                  />
+                  <DenseSelect
+                    label="Owner Influence"
+                    name="ownerInfluence"
+                    value={formData.ownerInfluence}
+                    options={DROPDOWN_OPTIONS.influence}
+                    onChange={handleChange}
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* QUOTE TEAM Section - always full width */}
         <div className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Users className="w-4 h-4 text-[#0071D0]" />
@@ -877,7 +1046,7 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
 
             {/* Right: Team List */}
             <div>
-              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+              <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1.5">
                 Assigned Team
               </label>
               <div className="border border-gray-200 rounded max-h-[200px] overflow-y-auto bg-gray-50">
@@ -893,7 +1062,10 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
                               <span className="text-[10px] font-bold text-gray-500">{member.name.charAt(0)}</span>
                             )}
                           </div>
-                          <span className="text-xs font-medium text-gray-900">{member.name}</span>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-medium text-gray-900">{member.name}</span>
+                            {member.role && <span className="text-[10px] text-gray-500">{member.role}</span>}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <div
@@ -931,6 +1103,7 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
 // --- MAIN APP COMPONENT ---
 export default function App() {
   const [viewMode, setViewMode] = useState('wizard'); // 'wizard' | 'card' | 'form'
+  const [formColumns, setFormColumns] = useState(2); // 1 or 2 columns for Form view
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -1302,6 +1475,8 @@ export default function App() {
           availableMembersToAdd={availableMembersToAdd}
           handleSubmit={handleSubmit}
           handleResetClick={handleResetClick}
+          formColumns={formColumns}
+          setFormColumns={setFormColumns}
         />
       ) : (
       <div className="flex-1 flex px-8 pb-8 gap-6 max-w-[1600px] mx-auto w-full h-[calc(100vh-80px)]">
