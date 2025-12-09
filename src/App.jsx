@@ -30,11 +30,11 @@ const COMPANIES = [
   { name: 'Globex Construction', type: 'Contractor' },
   { name: 'BuildRight Inc.', type: 'Contractor' },
   { name: 'Turner Construction', type: 'Contractor' },
-  // Engineers
-  { name: 'Soylent Engineering', type: 'Engineer' },
-  { name: 'AECOM', type: 'Engineer' },
-  { name: 'Jacobs Engineering', type: 'Engineer' },
-  { name: 'Tetra Tech', type: 'Engineer' }
+  // Engineers/Customers
+  { name: 'Soylent Engineering', type: 'Engineer/Customer' },
+  { name: 'AECOM', type: 'Engineer/Customer' },
+  { name: 'Jacobs Engineering', type: 'Engineer/Customer' },
+  { name: 'Tetra Tech', type: 'Engineer/Customer' }
 ];
 
 // Helper to abbreviate type
@@ -42,8 +42,8 @@ const getTypeAbbr = (type) => {
   switch(type) {
     case 'Owner': return 'OWN';
     case 'Contractor': return 'CON';
-    case 'Engineer': return 'ENG';
-    default: return 'UNK';
+    case 'Engineer/Customer': return 'ENG';
+    default: return '';
   }
 };
 
@@ -142,6 +142,9 @@ const DROPDOWN_OPTIONS = {
   ],
   customers: [
     { value: '', label: 'Make a selection' },
+    { value: 'Out of State', label: 'Out of State' },
+    { value: 'TBD', label: 'TBD' },
+    { value: 'None', label: 'None' },
     ...COMPANIES.map(c => ({
       value: c.name,
       label: `${c.name} (${getTypeAbbr(c.type)})`
@@ -278,7 +281,7 @@ const SidebarItem = ({ stepNumber, label, isActive, isCompleted, summaryData, on
   );
 };
 
-const InputField = ({ label, name, type = "text", placeholder, value, onChange, onBlur, error, required = false, suggestions = [], step }) => {
+const InputField = ({ label, name, type = "text", placeholder, value, onChange, onBlur, error, required = false, suggestions = [], step, autoFocus = false }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const filteredSuggestions = suggestions.length > 0 && value && type === 'text'
@@ -300,6 +303,7 @@ const InputField = ({ label, name, type = "text", placeholder, value, onChange, 
             type={type}
             name={name}
             value={value}
+            autoFocus={autoFocus}
             onChange={(e) => {
                 onChange(e);
                 if (suggestions.length > 0 && type === 'text') setShowSuggestions(true);
@@ -342,7 +346,7 @@ const InputField = ({ label, name, type = "text", placeholder, value, onChange, 
   );
 };
 
-const SelectField = ({ label, name, value, options, onChange, required = false }) => (
+const SelectField = ({ label, name, value, options, onChange, required = false, autoFocus = false }) => (
   <div className="flex flex-col gap-1.5 mb-5 w-full">
     <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
       {label}{required && '*'}
@@ -352,6 +356,7 @@ const SelectField = ({ label, name, value, options, onChange, required = false }
         name={name}
         value={value}
         onChange={onChange}
+        autoFocus={autoFocus}
         className="w-full p-3 bg-white border border-gray-200 rounded-md text-gray-700 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
       >
         {options.map((opt) => (
@@ -457,10 +462,18 @@ export default function App() {
         .filter(m => defaultTeamIds.includes(m.id))
         .map((m, index) => ({ ...m, isPrimary: index === 0 }));
 
+      // Check if selected customer is an Owner type
+      const selectedCompany = COMPANIES.find(c => c.name === value);
+      const isOwnerType = selectedCompany?.type === 'Owner';
+
       setFormData(prev => ({
         ...prev,
         [name]: value,
-        assignedTeam: defaultTeam
+        assignedTeam: defaultTeam,
+        // Auto-fill owner if customer is Owner type
+        owner: isOwnerType ? value : prev.owner,
+        // Auto-set influence to Yes if customer is Owner type
+        ownerInfluence: isOwnerType ? 'Yes' : prev.ownerInfluence
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -621,10 +634,10 @@ export default function App() {
     { label: 'Bid Date', value: formData.bidDate },
     { label: 'Bid Time', value: formData.bidTime },
     { label: 'Description', value: formData.projectDescription },
-    { label: 'Owner', value: formData.owner },
-    { label: 'Owner Influence', value: formData.ownerInfluence },
+    { label: 'Engineer/Customer', value: formData.customer },
     { label: 'Visibility', value: formData.visibility },
-    { label: 'Customer', value: formData.customer }
+    { label: 'Owner', value: formData.owner },
+    { label: 'Owner Influence', value: formData.ownerInfluence }
   ];
 
   const step2Summary = [
@@ -638,7 +651,7 @@ export default function App() {
   ];
 
   const step3Summary = [
-    { label: 'Customer', value: formData.customer },
+    { label: 'Engineer/Customer', value: formData.customer },
     { label: 'Assigned Team', value: formData.assignedTeam.length > 0
         ? formData.assignedTeam.map(m => m.name).join(', ')
         : 'None Assigned'
@@ -728,6 +741,7 @@ export default function App() {
                     error={errors.projectName}
                     required={true}
                     suggestions={EXISTING_PROJECTS}
+                    autoFocus={true}
                   />
                   <InputField
                     label="Project Alias"
@@ -745,19 +759,18 @@ export default function App() {
                   <InputField label="Bid Date" name="bidDate" type="date" value={formData.bidDate} onChange={handleChange} />
                   <SelectField label="Bid Time" name="bidTime" value={formData.bidTime} options={DROPDOWN_OPTIONS.bidTimes} onChange={handleChange} />
 
+                  <SelectField label="Engineer/Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
+                  <SelectField label="Visibility" name="visibility" value={formData.visibility} options={[{value:'', label: 'Make a selection'}, ...DROPDOWN_OPTIONS.visibility]} onChange={handleChange} />
+
                   <SelectField label="Owner" name="owner" value={formData.owner} options={DROPDOWN_OPTIONS.owners} onChange={handleChange} />
                   <SelectField label="Owner Influence" name="ownerInfluence" value={formData.ownerInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
-
-                  <SelectField label="Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
-
-                  <SelectField label="Visibility" name="visibility" value={formData.visibility} options={[{value:'', label: 'Make a selection'}, ...DROPDOWN_OPTIONS.visibility]} onChange={handleChange} />
                 </div>
               )}
 
               {/* STEP 2: JOBSITE LOCATION */}
               {currentStep === 2 && (
                 <div className="max-w-4xl animate-fadeIn pb-10">
-                  <InputField label="Job Site Address 1" name="address1" placeholder="Enter an address" value={formData.address1} onChange={handleChange} onBlur={handleBlur} />
+                  <InputField label="Job Site Address 1" name="address1" placeholder="Enter an address" value={formData.address1} onChange={handleChange} onBlur={handleBlur} autoFocus={true} />
                   <InputField label="Job Site Address 2" name="address2" placeholder="Enter an address" value={formData.address2} onChange={handleChange} onBlur={handleBlur} />
                   <InputField label="Job Site Address 3" name="address3" placeholder="Enter an address" value={formData.address3} onChange={handleChange} onBlur={handleBlur} />
 
@@ -773,7 +786,7 @@ export default function App() {
               {/* STEP 3: ASSIGN TEAM */}
               {currentStep === 3 && (
                 <div className="max-w-3xl animate-fadeIn pb-10">
-                  <SelectField label="Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
+                  <SelectField label="Engineer/Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} autoFocus={true} />
 
                   {formData.customer && (
                     <div className="mt-8 animate-fadeIn">
@@ -863,7 +876,7 @@ export default function App() {
                         <button onClick={() => goToStep(3)} className="text-[#0071D0] font-medium text-sm hover:underline">Make edits</button>
                     </div>
                     <div className="bg-white/50 p-6 rounded-lg border border-gray-100">
-                        <ReadOnlyField label="Customer" value={formData.customer} />
+                        <ReadOnlyField label="Engineer/Customer" value={formData.customer} />
                         <div className="mt-4">
                             <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Team Members</div>
                             <div className="flex flex-wrap gap-2">
@@ -881,28 +894,29 @@ export default function App() {
           </div>
 
           {/* FOOTER ACTIONS - Now sticky at bottom of this container */}
+          {/* Note: DOM order is Next then Back for correct tab order, CSS order-1/order-2 controls visual order */}
           <div className="mt-auto py-6 border-t border-gray-200 flex items-center gap-4 bg-[#F4F7FB]">
+            {currentStep < 4 ? (
+                <button onClick={nextStep} className="order-2 px-12 py-3 bg-[#0071D0] text-white font-bold rounded shadow-sm hover:bg-blue-700 transition">
+                    Next
+                </button>
+            ) : (
+                <button onClick={handleSubmit} className="order-2 px-12 py-3 bg-[#084B8A] text-white font-bold rounded shadow-sm hover:bg-[#063a6b] transition flex items-center gap-2">
+                    Create Project
+                    <span className="text-xs">▶</span>
+                </button>
+            )}
+
             {currentStep === 1 ? (
                 <button
                   onClick={handleExitClick}
-                  className="px-12 py-3 bg-white border border-gray-200 text-gray-900 font-bold rounded shadow-sm hover:bg-gray-50 transition"
+                  className="order-1 px-12 py-3 bg-white border border-gray-200 text-gray-900 font-bold rounded shadow-sm hover:bg-gray-50 transition"
                 >
                     Exit
                 </button>
             ) : (
-                <button onClick={prevStep} className="px-12 py-3 bg-white border border-gray-200 text-gray-900 font-bold rounded shadow-sm hover:bg-gray-50 transition">
+                <button onClick={prevStep} className="order-1 px-12 py-3 bg-white border border-gray-200 text-gray-900 font-bold rounded shadow-sm hover:bg-gray-50 transition">
                     Go Back
-                </button>
-            )}
-
-            {currentStep < 4 ? (
-                <button onClick={nextStep} className="px-12 py-3 bg-[#0071D0] text-white font-bold rounded shadow-sm hover:bg-blue-700 transition">
-                    Next
-                </button>
-            ) : (
-                <button onClick={handleSubmit} className="px-12 py-3 bg-[#084B8A] text-white font-bold rounded shadow-sm hover:bg-[#063a6b] transition flex items-center gap-2">
-                    Create Project
-                    <span className="text-xs">▶</span>
                 </button>
             )}
           </div>

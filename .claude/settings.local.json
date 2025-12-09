@@ -7,7 +7,11 @@
       "Bash(mkdir:*)",
       "Bash(git init:*)",
       "Bash(npm run dev:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: SVL Project Wizard\n\nReact app with multi-step project creation form featuring:\n- 4-step wizard flow with sidebar navigation\n- Form validation and autosuggest\n- Team member assignment with primary selection\n- Tailwind CSS v4 styling\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh repo create:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
