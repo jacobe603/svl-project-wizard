@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock, Layers, List } from 'lucide-react';
 
 // --- MOCK DATA CONFIGURATION ---
 
@@ -404,8 +404,291 @@ const TeamMemberRow = ({ member, isPrimary, onSetPrimary, onRemove }) => (
   </div>
 );
 
+// --- DENSE COMPONENTS FOR FLAT VIEW ---
+
+const DenseInput = ({ label, name, type = "text", placeholder, value, onChange, onBlur, error, required = false, suggestions = [], autoFocus = false }) => {
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const filteredSuggestions = suggestions.length > 0 && value && type === 'text'
+    ? suggestions.filter(s => s.toLowerCase().includes(value.toLowerCase()))
+    : [];
+
+  return (
+    <div className="relative">
+      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+        {label}{required && '*'}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        autoFocus={autoFocus}
+        onChange={(e) => {
+          onChange(e);
+          if (suggestions.length > 0 && type === 'text') setShowSuggestions(true);
+        }}
+        onFocus={() => suggestions.length > 0 && type === 'text' && setShowSuggestions(true)}
+        onBlur={(e) => {
+          setTimeout(() => setShowSuggestions(false), 200);
+          if (onBlur) onBlur(e);
+        }}
+        placeholder={placeholder}
+        className={`w-full px-2 py-1.5 bg-white border rounded text-gray-700 text-sm focus:outline-none focus:ring-1
+          ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-blue-500 focus:border-blue-500'}
+          placeholder:text-gray-400 transition-colors`}
+      />
+      {error && <span className="text-[10px] text-red-600 absolute -bottom-4 left-0">{error}</span>}
+
+      {showSuggestions && value && filteredSuggestions.length > 0 && (
+        <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded shadow-lg mt-1 z-50 max-h-32 overflow-y-auto">
+          {filteredSuggestions.map((suggestion, index) => (
+            <div
+              key={index}
+              className="px-2 py-1 hover:bg-gray-50 cursor-pointer text-xs text-gray-700"
+              onClick={() => {
+                onChange({ target: { name, value: suggestion } });
+                setShowSuggestions(false);
+              }}
+            >
+              {suggestion}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DenseSelect = ({ label, name, value, options, onChange, required = false }) => (
+  <div>
+    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+      {label}{required && '*'}
+    </label>
+    <div className="relative">
+      <select
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="w-full px-2 py-1.5 bg-white border border-gray-200 rounded text-gray-700 text-sm appearance-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>{opt.label}</option>
+        ))}
+      </select>
+      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+    </div>
+  </div>
+);
+
+// --- FLAT VIEW COMPONENT ---
+
+const FlatView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick, handleExitClick }) => (
+  <div className="flex-1 overflow-y-auto p-6">
+    <div className="max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-xl font-bold text-gray-900">Create New Project</h1>
+        <div className="flex gap-2">
+          <button
+            onClick={handleResetClick}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleSubmit}
+            className="px-6 py-2 text-sm font-medium text-white bg-[#0071D0] rounded hover:bg-blue-700 transition"
+          >
+            Create Project
+          </button>
+        </div>
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-3 gap-6">
+
+        {/* Column 1: Project Details */}
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+            <FileText className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="font-semibold text-gray-900 text-sm">Project Details</h2>
+          </div>
+          <div className="space-y-3">
+            <DenseInput
+              label="Project Name"
+              name="projectName"
+              placeholder="Enter project name"
+              value={formData.projectName}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={errors.projectName}
+              required
+              suggestions={EXISTING_PROJECTS}
+              autoFocus
+            />
+            <DenseInput
+              label="Project Alias"
+              name="projectAlias"
+              placeholder="Enter alias"
+              value={formData.projectAlias}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Project Status"
+              name="projectStatus"
+              value={formData.projectStatus}
+              options={DROPDOWN_OPTIONS.projectStatus}
+              onChange={handleChange}
+            />
+            <DenseInput
+              label="Description"
+              name="projectDescription"
+              placeholder="Description"
+              value={formData.projectDescription}
+              onChange={handleChange}
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <DenseInput
+                label="Bid Date"
+                name="bidDate"
+                type="date"
+                value={formData.bidDate}
+                onChange={handleChange}
+              />
+              <DenseSelect
+                label="Bid Time"
+                name="bidTime"
+                value={formData.bidTime}
+                options={DROPDOWN_OPTIONS.bidTimes}
+                onChange={handleChange}
+              />
+            </div>
+            <DenseSelect
+              label="Visibility"
+              name="visibility"
+              value={formData.visibility}
+              options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {/* Column 2: Customer/Owner + Location */}
+        <div className="space-y-4">
+          {/* Customer/Owner Section */}
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+              <Building className="w-4 h-4 text-[#0071D0]" />
+              <h2 className="font-semibold text-gray-900 text-sm">Customer & Owner</h2>
+            </div>
+            <div className="space-y-3">
+              <DenseSelect label="Engineer/Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
+              <DenseSelect label="Owner" name="owner" value={formData.owner} options={DROPDOWN_OPTIONS.owners} onChange={handleChange} />
+              <DenseSelect label="Owner Influence" name="ownerInfluence" value={formData.ownerInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+              <MapPin className="w-4 h-4 text-[#0071D0]" />
+              <h2 className="font-semibold text-gray-900 text-sm">Jobsite Location</h2>
+            </div>
+            <div className="space-y-3">
+              <DenseInput label="Address 1" name="address1" placeholder="Address" value={formData.address1} onChange={handleChange} />
+              <DenseInput label="Address 2" name="address2" placeholder="Address" value={formData.address2} onChange={handleChange} />
+              <div className="grid grid-cols-2 gap-2">
+                <DenseInput label="City" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+                <DenseSelect label="State" name="state" value={formData.state} options={DROPDOWN_OPTIONS.states} onChange={handleChange} />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <DenseInput label="Zip" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} />
+                <DenseSelect label="Country" name="country" value={formData.country} options={DROPDOWN_OPTIONS.countries} onChange={handleChange} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Column 3: Team Assignment */}
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+            <Users className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="font-semibold text-gray-900 text-sm">Quote Team</h2>
+          </div>
+
+          {/* Add Team Member */}
+          <div className="mb-3">
+            <DenseSelect
+              label="Add Team Member"
+              name="addMember"
+              value=""
+              options={[
+                { value: '', label: 'Select to add' },
+                ...availableMembersToAdd.map(m => ({ value: m.id, label: `${m.name} - ${m.role}` }))
+              ]}
+              onChange={handleAddTeamMember}
+            />
+          </div>
+
+          {/* Team List */}
+          <div className="border border-gray-100 rounded max-h-[280px] overflow-y-auto">
+            {formData.assignedTeam.length > 0 ? (
+              <div className="divide-y divide-gray-100">
+                {formData.assignedTeam.map(member => (
+                  <div key={member.id} className="flex items-center justify-between p-2 hover:bg-blue-50/30 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300">
+                        {member.image ? (
+                          <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-500">{member.name.charAt(0)}</span>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-gray-900">{member.name}</div>
+                        <div className="text-[10px] text-gray-500">{member.role}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${member.isPrimary ? 'border-[#0071D0]' : 'border-gray-300'}`}
+                        onClick={() => handleSetPrimary(member.id)}
+                        title="Set as primary"
+                      >
+                        {member.isPrimary && <div className="w-2 h-2 rounded-full bg-[#0071D0]" />}
+                      </div>
+                      <button
+                        onClick={() => handleRemoveTeamMember(member.id)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-4 text-center text-gray-400 text-xs">
+                {formData.customer ? 'No team members assigned' : 'Select a customer first'}
+              </div>
+            )}
+          </div>
+
+          {formData.assignedTeam.length > 0 && (
+            <div className="mt-2 text-[10px] text-gray-500">
+              Primary: {formData.assignedTeam.find(m => m.isPrimary)?.name || 'None selected'}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // --- MAIN APP COMPONENT ---
 export default function App() {
+  const [viewMode, setViewMode] = useState('wizard'); // 'wizard' or 'flat'
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -699,16 +982,61 @@ export default function App() {
                 </div>
             </div>
         </div>
-        <button
+        <div className="flex items-center gap-4">
+          {/* View Toggle */}
+          <div className="flex items-center bg-white border border-gray-200 rounded-lg p-0.5 shadow-sm">
+            <button
+              onClick={() => setViewMode('wizard')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'wizard'
+                  ? 'bg-[#0071D0] text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Step-by-step wizard view"
+            >
+              <Layers className="w-4 h-4" />
+              Steps
+            </button>
+            <button
+              onClick={() => setViewMode('flat')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'flat'
+                  ? 'bg-[#0071D0] text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Single page flat view"
+            >
+              <List className="w-4 h-4" />
+              Flat
+            </button>
+          </div>
+
+          <button
             onClick={handleExitClick}
             className="flex items-center gap-2 text-gray-900 font-medium text-sm hover:text-gray-600"
-        >
-          <X className="w-5 h-5" />
-          Return to Dashboard
-        </button>
+          >
+            <X className="w-5 h-5" />
+            Return to Dashboard
+          </button>
+        </div>
       </header>
 
       {/* MAIN CONTENT AREA */}
+      {viewMode === 'flat' ? (
+        <FlatView
+          formData={formData}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+          errors={errors}
+          handleSetPrimary={handleSetPrimary}
+          handleRemoveTeamMember={handleRemoveTeamMember}
+          handleAddTeamMember={handleAddTeamMember}
+          availableMembersToAdd={availableMembersToAdd}
+          handleSubmit={handleSubmit}
+          handleResetClick={handleResetClick}
+          handleExitClick={handleExitClick}
+        />
+      ) : (
       <div className="flex-1 flex px-8 pb-8 gap-6 max-w-[1600px] mx-auto w-full h-[calc(100vh-80px)]">
 
         <div className="flex-1 flex flex-col min-h-full">
@@ -988,6 +1316,7 @@ export default function App() {
         </div>
 
       </div>
+      )}
     </div>
   );
 }
