@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock, Layers, List } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, X, Building, MapPin, Users, FileText, UserPlus, Trash2, AlertTriangle, Calendar, Clock, Layers, LayoutGrid, AlignJustify } from 'lucide-react';
 
 // --- MOCK DATA CONFIGURATION ---
 
@@ -480,9 +480,9 @@ const DenseSelect = ({ label, name, value, options, onChange, required = false }
   </div>
 );
 
-// --- FLAT VIEW COMPONENT ---
+// --- CARD VIEW COMPONENT ---
 
-const FlatView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick, handleExitClick }) => (
+const CardView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick, handleExitClick }) => (
   <div className="flex-1 overflow-y-auto p-6">
     <div className="max-w-6xl mx-auto">
       {/* Header */}
@@ -507,69 +507,82 @@ const FlatView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
       {/* Main Grid */}
       <div className="grid grid-cols-3 gap-6">
 
-        {/* Column 1: Project Details */}
-        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
-          <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
-            <FileText className="w-4 h-4 text-[#0071D0]" />
-            <h2 className="font-semibold text-gray-900 text-sm">Project Details</h2>
-          </div>
-          <div className="space-y-3">
-            <DenseInput
-              label="Project Name"
-              name="projectName"
-              placeholder="Enter project name"
-              value={formData.projectName}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.projectName}
-              required
-              suggestions={EXISTING_PROJECTS}
-              autoFocus
-            />
-            <DenseInput
-              label="Project Alias"
-              name="projectAlias"
-              placeholder="Enter alias"
-              value={formData.projectAlias}
-              onChange={handleChange}
-            />
-            <DenseSelect
-              label="Project Status"
-              name="projectStatus"
-              value={formData.projectStatus}
-              options={DROPDOWN_OPTIONS.projectStatus}
-              onChange={handleChange}
-            />
-            <DenseInput
-              label="Description"
-              name="projectDescription"
-              placeholder="Description"
-              value={formData.projectDescription}
-              onChange={handleChange}
-            />
-            <div className="grid grid-cols-2 gap-2">
+        {/* Column 1: Project Details + Bid Info */}
+        <div className="space-y-4">
+          {/* Project Details Section */}
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+              <FileText className="w-4 h-4 text-[#0071D0]" />
+              <h2 className="font-semibold text-gray-900 text-sm">Project Details</h2>
+            </div>
+            <div className="space-y-3">
               <DenseInput
-                label="Bid Date"
-                name="bidDate"
-                type="date"
-                value={formData.bidDate}
+                label="Project Name"
+                name="projectName"
+                placeholder="Enter project name"
+                value={formData.projectName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.projectName}
+                required
+                suggestions={EXISTING_PROJECTS}
+                autoFocus
+              />
+              <DenseInput
+                label="Project Alias"
+                name="projectAlias"
+                placeholder="Enter alias"
+                value={formData.projectAlias}
                 onChange={handleChange}
               />
               <DenseSelect
-                label="Bid Time"
-                name="bidTime"
-                value={formData.bidTime}
-                options={DROPDOWN_OPTIONS.bidTimes}
+                label="Project Status"
+                name="projectStatus"
+                value={formData.projectStatus}
+                options={DROPDOWN_OPTIONS.projectStatus}
+                onChange={handleChange}
+              />
+              <DenseInput
+                label="Description"
+                name="projectDescription"
+                placeholder="Description"
+                value={formData.projectDescription}
                 onChange={handleChange}
               />
             </div>
-            <DenseSelect
-              label="Visibility"
-              name="visibility"
-              value={formData.visibility}
-              options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
-              onChange={handleChange}
-            />
+          </div>
+
+          {/* Bid Info Section */}
+          <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+              <Calendar className="w-4 h-4 text-[#0071D0]" />
+              <h2 className="font-semibold text-gray-900 text-sm">Bid Info</h2>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <DenseInput
+                  label="Bid Date"
+                  name="bidDate"
+                  type="date"
+                  value={formData.bidDate}
+                  onChange={handleChange}
+                />
+                <DenseSelect
+                  label="Bid Time"
+                  name="bidTime"
+                  value={formData.bidTime}
+                  options={DROPDOWN_OPTIONS.bidTimes}
+                  onChange={handleChange}
+                />
+              </div>
+              <DenseSelect
+                label="Visibility"
+                name="visibility"
+                value={formData.visibility}
+                options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
+                onChange={handleChange}
+              />
+            </div>
           </div>
         </div>
 
@@ -686,9 +699,238 @@ const FlatView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
   </div>
 );
 
+// --- FORM VIEW COMPONENT ---
+
+const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary, handleRemoveTeamMember, handleAddTeamMember, availableMembersToAdd, handleSubmit, handleResetClick }) => (
+  <div className="flex-1 overflow-y-auto p-6">
+    <div className="max-w-4xl mx-auto">
+      {/* Single Container */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-200">
+          <h1 className="text-xl font-bold text-gray-900">Create New Project</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={handleResetClick}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded hover:bg-gray-50 transition"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-6 py-2 text-sm font-medium text-white bg-[#0071D0] rounded hover:bg-blue-700 transition"
+            >
+              Create Project
+            </button>
+          </div>
+        </div>
+
+        {/* PROJECT DETAILS Section */}
+        <div className="p-5 border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <FileText className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Project Details</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <DenseInput
+                label="Project Name"
+                name="projectName"
+                placeholder="Enter project name"
+                value={formData.projectName}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                error={errors.projectName}
+                required
+                suggestions={EXISTING_PROJECTS}
+                autoFocus
+              />
+            </div>
+            <DenseInput
+              label="Project Alias"
+              name="projectAlias"
+              placeholder="Enter alias"
+              value={formData.projectAlias}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Project Status"
+              name="projectStatus"
+              value={formData.projectStatus}
+              options={DROPDOWN_OPTIONS.projectStatus}
+              onChange={handleChange}
+            />
+            <div className="col-span-2">
+              <DenseInput
+                label="Description"
+                name="projectDescription"
+                placeholder="Enter description"
+                value={formData.projectDescription}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* BID INFO Section */}
+        <div className="p-5 border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bid Info</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <DenseInput
+              label="Bid Date"
+              name="bidDate"
+              type="date"
+              value={formData.bidDate}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Bid Time"
+              name="bidTime"
+              value={formData.bidTime}
+              options={DROPDOWN_OPTIONS.bidTimes}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Visibility"
+              name="visibility"
+              value={formData.visibility}
+              options={[{value:'', label: 'Select'}, ...DROPDOWN_OPTIONS.visibility]}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {/* CUSTOMER & OWNER Section */}
+        <div className="p-5 border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <Building className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <DenseSelect
+              label="Engineer/Customer"
+              name="customer"
+              value={formData.customer}
+              options={DROPDOWN_OPTIONS.customers}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Owner"
+              name="owner"
+              value={formData.owner}
+              options={DROPDOWN_OPTIONS.owners}
+              onChange={handleChange}
+            />
+            <DenseSelect
+              label="Owner Influence"
+              name="ownerInfluence"
+              value={formData.ownerInfluence}
+              options={DROPDOWN_OPTIONS.influence}
+              onChange={handleChange}
+            />
+          </div>
+        </div>
+
+        {/* JOBSITE LOCATION Section */}
+        <div className="p-5 border-b border-gray-200">
+          <div className="flex items-center gap-2 mb-4">
+            <MapPin className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jobsite Location</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-2">
+              <DenseInput label="Address 1" name="address1" placeholder="Enter address" value={formData.address1} onChange={handleChange} />
+            </div>
+            <div className="col-span-2">
+              <DenseInput label="Address 2" name="address2" placeholder="Enter address" value={formData.address2} onChange={handleChange} />
+            </div>
+            <DenseInput label="City" name="city" placeholder="City" value={formData.city} onChange={handleChange} />
+            <DenseSelect label="State" name="state" value={formData.state} options={DROPDOWN_OPTIONS.states} onChange={handleChange} />
+            <DenseInput label="Zip" name="zip" placeholder="Zip" value={formData.zip} onChange={handleChange} />
+            <DenseSelect label="Country" name="country" value={formData.country} options={DROPDOWN_OPTIONS.countries} onChange={handleChange} />
+          </div>
+        </div>
+
+        {/* QUOTE TEAM Section */}
+        <div className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <Users className="w-4 h-4 text-[#0071D0]" />
+            <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Quote Team</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {/* Left: Add Team Member */}
+            <div>
+              <DenseSelect
+                label="Add Team Member"
+                name="addMember"
+                value=""
+                options={[
+                  { value: '', label: 'Select to add' },
+                  ...availableMembersToAdd.map(m => ({ value: m.id, label: `${m.name} - ${m.role}` }))
+                ]}
+                onChange={handleAddTeamMember}
+              />
+            </div>
+
+            {/* Right: Team List */}
+            <div>
+              <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                Assigned Team
+              </label>
+              <div className="border border-gray-200 rounded max-h-[200px] overflow-y-auto bg-gray-50">
+                {formData.assignedTeam.length > 0 ? (
+                  <div className="divide-y divide-gray-100">
+                    {formData.assignedTeam.map(member => (
+                      <div key={member.id} className="flex items-center justify-between p-2 bg-white hover:bg-blue-50/30 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border border-gray-300">
+                            {member.image ? (
+                              <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[10px] font-bold text-gray-500">{member.name.charAt(0)}</span>
+                            )}
+                          </div>
+                          <span className="text-xs font-medium text-gray-900">{member.name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer ${member.isPrimary ? 'border-[#0071D0]' : 'border-gray-300'}`}
+                            onClick={() => handleSetPrimary(member.id)}
+                            title="Set as primary"
+                          >
+                            {member.isPrimary && <div className="w-2 h-2 rounded-full bg-[#0071D0]" />}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveTeamMember(member.id)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                            title="Remove"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-3 text-center text-gray-400 text-xs">
+                    {formData.customer ? 'No team members assigned' : 'Select a customer first'}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 // --- MAIN APP COMPONENT ---
 export default function App() {
-  const [viewMode, setViewMode] = useState('wizard'); // 'wizard' or 'flat'
+  const [viewMode, setViewMode] = useState('wizard'); // 'wizard' | 'card' | 'form'
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -998,16 +1240,28 @@ export default function App() {
               Steps
             </button>
             <button
-              onClick={() => setViewMode('flat')}
+              onClick={() => setViewMode('card')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'flat'
+                viewMode === 'card'
                   ? 'bg-[#0071D0] text-white'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
-              title="Single page flat view"
+              title="Card layout view"
             >
-              <List className="w-4 h-4" />
-              Flat
+              <LayoutGrid className="w-4 h-4" />
+              Card
+            </button>
+            <button
+              onClick={() => setViewMode('form')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === 'form'
+                  ? 'bg-[#0071D0] text-white'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+              title="Continuous form view"
+            >
+              <AlignJustify className="w-4 h-4" />
+              Form
             </button>
           </div>
 
@@ -1022,8 +1276,8 @@ export default function App() {
       </header>
 
       {/* MAIN CONTENT AREA */}
-      {viewMode === 'flat' ? (
-        <FlatView
+      {viewMode === 'card' ? (
+        <CardView
           formData={formData}
           handleChange={handleChange}
           handleBlur={handleBlur}
@@ -1035,6 +1289,19 @@ export default function App() {
           handleSubmit={handleSubmit}
           handleResetClick={handleResetClick}
           handleExitClick={handleExitClick}
+        />
+      ) : viewMode === 'form' ? (
+        <FormView
+          formData={formData}
+          handleChange={handleChange}
+          handleBlur={handleBlur}
+          errors={errors}
+          handleSetPrimary={handleSetPrimary}
+          handleRemoveTeamMember={handleRemoveTeamMember}
+          handleAddTeamMember={handleAddTeamMember}
+          availableMembersToAdd={availableMembersToAdd}
+          handleSubmit={handleSubmit}
+          handleResetClick={handleResetClick}
         />
       ) : (
       <div className="flex-1 flex px-8 pb-8 gap-6 max-w-[1600px] mx-auto w-full h-[calc(100vh-80px)]">
