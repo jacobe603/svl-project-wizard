@@ -34,7 +34,14 @@ const COMPANIES = [
   { name: 'Soylent Engineering', type: 'Engineer/Customer' },
   { name: 'AECOM', type: 'Engineer/Customer' },
   { name: 'Jacobs Engineering', type: 'Engineer/Customer' },
-  { name: 'Tetra Tech', type: 'Engineer/Customer' }
+  { name: 'Tetra Tech', type: 'Engineer/Customer' },
+  // Architects
+  { name: 'HGA Architects', type: 'Architect' },
+  { name: 'Perkins&Will', type: 'Architect' },
+  { name: 'RSP Architects', type: 'Architect' },
+  { name: 'Leo A Daly', type: 'Architect' },
+  { name: 'Hammel Green Abrahamson', type: 'Architect' },
+  { name: 'Cuningham Group', type: 'Architect' }
 ];
 
 // Helper to abbreviate type
@@ -43,6 +50,7 @@ const getTypeAbbr = (type) => {
     case 'Owner': return 'OWN';
     case 'Contractor': return 'CON';
     case 'Engineer/Customer': return 'ENG';
+    case 'Architect': return 'ARC';
     default: return '';
   }
 };
@@ -138,6 +146,12 @@ const DROPDOWN_OPTIONS = {
     { value: '', label: 'Make a selection' },
     ...COMPANIES
       .filter(c => c.type === 'Owner')
+      .map(c => ({ value: c.name, label: c.name }))
+  ],
+  architects: [
+    { value: '', label: 'Make a selection' },
+    ...COMPANIES
+      .filter(c => c.type === 'Architect')
       .map(c => ({ value: c.name, label: c.name }))
   ],
   customers: [
@@ -599,6 +613,8 @@ const CardView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
               <DenseSelect label="Engineer/Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
               <DenseSelect label="Owner" name="owner" value={formData.owner} options={DROPDOWN_OPTIONS.owners} onChange={handleChange} />
               <DenseSelect label="Owner Influence" name="ownerInfluence" value={formData.ownerInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
+              <DenseSelect label="Architect" name="architect" value={formData.architect} options={DROPDOWN_OPTIONS.architects} onChange={handleChange} />
+              <DenseSelect label="Architect Influence" name="architectInfluence" value={formData.architectInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
             </div>
           </div>
 
@@ -882,6 +898,22 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
                       onChange={handleChange}
                     />
                   </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <DenseSelect
+                      label="Architect"
+                      name="architect"
+                      value={formData.architect}
+                      options={DROPDOWN_OPTIONS.architects}
+                      onChange={handleChange}
+                    />
+                    <DenseSelect
+                      label="Architect Influence"
+                      name="architectInfluence"
+                      value={formData.architectInfluence}
+                      options={DROPDOWN_OPTIONS.influence}
+                      onChange={handleChange}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1018,6 +1050,22 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
                     onChange={handleChange}
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <DenseSelect
+                    label="Architect"
+                    name="architect"
+                    value={formData.architect}
+                    options={DROPDOWN_OPTIONS.architects}
+                    onChange={handleChange}
+                  />
+                  <DenseSelect
+                    label="Architect Influence"
+                    name="architectInfluence"
+                    value={formData.architectInfluence}
+                    options={DROPDOWN_OPTIONS.influence}
+                    onChange={handleChange}
+                  />
+                </div>
               </div>
             </div>
           </>
@@ -1103,7 +1151,7 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
 // --- MAIN APP COMPONENT ---
 export default function App() {
   const [viewMode, setViewMode] = useState('wizard'); // 'wizard' | 'card' | 'form'
-  const [formColumns, setFormColumns] = useState(2); // 1 or 2 columns for Form view
+  const [formColumns, setFormColumns] = useState(1); // 1 or 2 columns for Form view
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -1121,6 +1169,8 @@ export default function App() {
     bidTime: '',
     owner: '',
     ownerInfluence: 'Unknown',
+    architect: '',
+    architectInfluence: 'Unknown',
     visibility: '',
     address1: '',
     address2: '',
@@ -1160,9 +1210,10 @@ export default function App() {
         .filter(m => defaultTeamIds.includes(m.id))
         .map((m, index) => ({ ...m, isPrimary: index === 0 }));
 
-      // Check if selected customer is an Owner type
+      // Check if selected customer is an Owner or Architect type
       const selectedCompany = COMPANIES.find(c => c.name === value);
       const isOwnerType = selectedCompany?.type === 'Owner';
+      const isArchitectType = selectedCompany?.type === 'Architect';
 
       setFormData(prev => ({
         ...prev,
@@ -1171,7 +1222,11 @@ export default function App() {
         // Auto-fill owner if customer is Owner type
         owner: isOwnerType ? value : prev.owner,
         // Auto-set influence to Yes if customer is Owner type
-        ownerInfluence: isOwnerType ? 'Yes' : prev.ownerInfluence
+        ownerInfluence: isOwnerType ? 'Yes' : prev.ownerInfluence,
+        // Auto-fill architect if customer is Architect type
+        architect: isArchitectType ? value : prev.architect,
+        // Auto-set influence to Yes if customer is Architect type
+        architectInfluence: isArchitectType ? 'Yes' : prev.architectInfluence
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -1264,6 +1319,8 @@ export default function App() {
         bidTime: '',
         owner: '',
         ownerInfluence: 'Unknown',
+        architect: '',
+        architectInfluence: 'Unknown',
         visibility: '',
         address1: '',
         address2: '',
@@ -1335,7 +1392,9 @@ export default function App() {
     { label: 'Engineer/Customer', value: formData.customer },
     { label: 'Visibility', value: formData.visibility },
     { label: 'Owner', value: formData.owner },
-    { label: 'Owner Influence', value: formData.ownerInfluence }
+    { label: 'Owner Influence', value: formData.ownerInfluence },
+    { label: 'Architect', value: formData.architect },
+    { label: 'Architect Influence', value: formData.architectInfluence }
   ];
 
   const step2Summary = [
@@ -1534,6 +1593,9 @@ export default function App() {
 
                   <SelectField label="Owner" name="owner" value={formData.owner} options={DROPDOWN_OPTIONS.owners} onChange={handleChange} />
                   <SelectField label="Owner Influence" name="ownerInfluence" value={formData.ownerInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
+
+                  <SelectField label="Architect" name="architect" value={formData.architect} options={DROPDOWN_OPTIONS.architects} onChange={handleChange} />
+                  <SelectField label="Architect Influence" name="architectInfluence" value={formData.architectInfluence} options={DROPDOWN_OPTIONS.influence} onChange={handleChange} />
                 </div>
               )}
 
@@ -1620,6 +1682,8 @@ export default function App() {
                         <ReadOnlyField label="Bid Time" value={formData.bidTime} />
                         <ReadOnlyField label="Owner" value={formData.owner} />
                         <ReadOnlyField label="Owner Influence" value={formData.ownerInfluence} />
+                        <ReadOnlyField label="Architect" value={formData.architect} />
+                        <ReadOnlyField label="Architect Influence" value={formData.architectInfluence} />
                         <ReadOnlyField label="Visibility" value={formData.visibility} />
                     </div>
                   </div>
