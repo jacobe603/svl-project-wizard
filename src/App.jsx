@@ -607,7 +607,7 @@ const CardView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
           <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
               <Building className="w-4 h-4 text-[#0071D0]" />
-              <h2 className="font-semibold text-gray-900 text-sm">Customer & Owner</h2>
+              <h2 className="font-semibold text-gray-900 text-sm">Customers</h2>
             </div>
             <div className="space-y-3">
               <DenseSelect label="Engineer/Customer" name="customer" value={formData.customer} options={DROPDOWN_OPTIONS.customers} onChange={handleChange} />
@@ -848,7 +848,7 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
               </div>
             </div>
 
-            {/* ROW 2: Jobsite Location + Customer & Owner side by side */}
+            {/* ROW 2: Jobsite Location + Customers side by side */}
             <div className="grid grid-cols-2 border-b border-gray-200">
               {/* JOBSITE LOCATION Section */}
               <div className="p-5 border-r border-gray-200">
@@ -868,11 +868,11 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
                 </div>
               </div>
 
-              {/* CUSTOMER & OWNER Section */}
+              {/* CUSTOMERS Section */}
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Building className="w-4 h-4 text-[#0071D0]" />
-                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
+                  <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customers</h2>
                 </div>
                 <div className="space-y-4">
                   <DenseSelect
@@ -1020,11 +1020,11 @@ const FormView = ({ formData, handleChange, handleBlur, errors, handleSetPrimary
               </div>
             </div>
 
-            {/* CUSTOMER & OWNER Section */}
+            {/* CUSTOMERS Section */}
             <div className="p-5 border-b border-gray-200">
               <div className="flex items-center gap-2 mb-4">
                 <Building className="w-4 h-4 text-[#0071D0]" />
-                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer & Owner</h2>
+                <h2 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customers</h2>
               </div>
               <div className="space-y-4">
                 <DenseSelect
